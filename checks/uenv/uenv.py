@@ -581,10 +581,7 @@ class update_uenv_check(rfm.RunOnlyRegressionTest, UENV):
             sn.assert_not_found(r'command not found', self.stderr),
             ])
 
-    # uenv image add gromacs-slim/2024.3:v1@scopi%zen2 store.squashfs
 
-
-# @rfm.simple_test
 class gromacs_base_uenv_check(gromacs_check, UENV):
     '''
     Check title: TBD
@@ -659,8 +656,6 @@ class gromacs_uenv_stress_check(gromacs_base_uenv_check, UENV):
     def get_parent(self):
         variants = uenv_image_present_check.get_variant_nums(uenv2build=self.uenv2build)
         self.parent = self.getdep(uenv_image_present_check.variant_name(variants[0]))
-
-        # uenv = self.get_uenv_from_uenv2build(self.uenv2build)
         self.skip_if(not self.parent.uenv_installed, msg=f'{self.parent.uenv} is not installed')
 
 
