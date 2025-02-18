@@ -1,3 +1,8 @@
+# Copyright 2015 victorusu
+# See the top-level LICENSE file for details.
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
 bootstrap:
   spec: $bootstrap
 gcc:
