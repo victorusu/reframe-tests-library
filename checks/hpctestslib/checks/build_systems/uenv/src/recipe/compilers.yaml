@@ -1,0 +1,5 @@
+bootstrap:
+  spec: $bootstrap
+gcc:
+  specs:
+  - $gcc
