@@ -1,0 +1,18 @@
+$envname:
+  compiler:
+  - toolchain: gcc
+    spec: $gcc
+  unify: when_possible
+  specs:
+$spec
+  mpi:
+    $mpi
+  variants:
+$variants
+  views:
+    develop:
+      exclude: ['$name']
+    $envname:
+      link: run
+    default:
+      link: run

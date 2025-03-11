@@ -1,0 +1,7 @@
+name: $name
+store: /user-environment
+description: $descr
+spack:
+  repo: https://github.com/spack/spack.git
+  commit: $spack
+modules: false
