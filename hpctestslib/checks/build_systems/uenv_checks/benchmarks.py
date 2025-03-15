@@ -27,8 +27,8 @@ if not prefix in sys.path:
     sys.path = [prefix] + sys.path
 
 
-import checks.build_systems.uenv.definitions as uenv
-import checks.build_systems.uenv.mixin as uenv_mixin
+import checks.build_systems.uenv_checks.definitions as uenv
+import mixins.build_systems.uenv.mixin as uenv_mixin
 import util as hpcutil
 
 

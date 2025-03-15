@@ -17,26 +17,26 @@ import reframe.utility as util
 
 # Add the root directory of hpctestslib
 prefix = os.path.normpath(
-    os.path.join(os.path.abspath(os.path.dirname(__file__)), *[os.pardir, os.pardir, os.pardir, os.pardir])
+    os.path.join(os.path.abspath(os.path.dirname(__file__)), *[os.pardir, os.pardir, os.pardir])
 )
 if not prefix in sys.path:
     sys.path = [prefix] + sys.path
 
 
-import checks.build_systems.uenv.definitions as uenv
-import checks.build_systems.uenv.benchmarks as uenv_mixin
-import checks.sciapp.nwchem.mixin as nwchem
+import checks.build_systems.uenv_checks.definitions as uenv
+import checks.build_systems.uenv_checks.benchmarks as uenv_mixin
+import mixins.sciapp.sphexa.mixin as sphexa
 import util as hpcutil
 
 
 @rfm.simple_test
-class nwchem_uenv_check(rfm.RunOnlyRegressionTest,
-                        nwchem.nwchem_mixin,
+class sphexa_uenv_check(rfm.RunOnlyRegressionTest,
+                        sphexa.sphexa_mixin,
                         uenv_mixin.uenv_mixin):
     '''
-    Title: NWChem uenv benchmarks
-    Description: This check performs a strong experiment up to 16 nodes
-    that checks the uenv-compiled version of NWChem.
+    Title: SPH-EXA uenv benchmarks
+    Description: This check performs a weak-scaling experiment up to 16 nodes
+    that checks the uenv-compiled version of SPH-EXA.
 
     Notes:
     * This check triggers two distinct classes of tests, each handling the
@@ -60,26 +60,48 @@ class nwchem_uenv_check(rfm.RunOnlyRegressionTest,
     command with and without the uenv view, these tests ensure comprehensive
     validation of uenv behavior across different configurations.
 
+    * The executables are expected to be named:
+        - sphexa - CPU-only version of the code
+        - sphexa-cuda - CUDA accelerated version of the code
+        - sphexa-hip - HIP accelerated version of the code
+
     * The valid programming environment is the builtin one.
+
+    * Any remote partion can execute the CPU version of the code
 
     * In order to enable the execution of the code in non-remote partitions,
     pass the parameter avoid_local=False to the hpcutil.get_max_cpus_per_part()
     function
+
+    * The test assumes that the virtual partitions define the following features
+    to run the GPU accelerated version of the code
+        - cuda - CUDA accelerated version of the code
+        - hip - HIP accelerated version of the code
     '''
-    uenv = parameter(list(filter(lambda x: x['name'].startswith('nwchem'), uenv.UENV_SOFTWARE)), fmt=lambda x: x['name'])
+    uenv = parameter(list(filter(lambda x: x['name'].startswith('sphexa'), uenv.UENV_SOFTWARE)), fmt=lambda x: x['name'])
 
     num_nodes = parameter(reversed([1, 2, 4, 6, 8, 12, 16]))
     partition_cpus = parameter(hpcutil.get_max_cpus_per_part(), fmt=lambda x: f'{util.toalphanum(x["name"]).lower()}_{x["num_cores"]}')
     use_multithreading = False
     valid_prog_environs = ['builtin']
     maintainers = ['@victorusu']
-    env_vars = {
-        'NWCHEM_BASIS_LIBRARY' : '/user-environment/env/nwchem/share/nwchem/libraries/',
-    }
+    num_steps = 50
+    num_particles = 50
 
     @run_after('init')
     def set_tags(self):
         self.tags |= {'uenv'}
+
+    @run_after('init', always_last=True)
+    def update_executable(self):
+        if 'cuda' in self.uenv_name:
+            self.executable = self.executable + '-cuda'
+        elif 'hip' in self.uenv_name:
+            self.executable = self.executable + '-hip'
+
+    @run_after('init')
+    def set_num_particles(self):
+        self.num_particles = self.num_particles * self.num_nodes
 
     @run_after('init')
     def setup_job_parameters(self):

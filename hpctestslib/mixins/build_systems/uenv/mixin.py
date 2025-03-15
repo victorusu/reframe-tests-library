@@ -20,7 +20,7 @@ if not prefix in sys.path:
     sys.path = [prefix] + sys.path
 
 
-import checks.build_systems.uenv.definitions as uenv
+import checks.build_systems.uenv_checks.definitions as uenv
 
 
 class build_uenv_mixin(rfm.RegressionMixin):

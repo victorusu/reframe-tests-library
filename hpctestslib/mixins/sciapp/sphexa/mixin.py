@@ -50,7 +50,7 @@ class sphexa_mixin(rfm.RegressionMixin):
     #: :type: :class:`str`
     #: :values: ``['evrard','turbulence']``
     benchmark = parameter([
-        'evrard',
+        'evrard', 'sedov',
         'turbulence',
     ])
 

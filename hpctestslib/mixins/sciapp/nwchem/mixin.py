@@ -22,7 +22,7 @@ if not prefix in sys.path:
 
 
 # import mixin as nwchem
-import checks.sciapp.nwchem.inputs as inputs
+import mixins.sciapp.nwchem.inputs as inputs
 
 
 class nwchem_mixin(rfm.RegressionMixin):

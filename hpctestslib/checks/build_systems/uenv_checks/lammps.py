@@ -17,26 +17,26 @@ import reframe.utility as util
 
 # Add the root directory of hpctestslib
 prefix = os.path.normpath(
-    os.path.join(os.path.abspath(os.path.dirname(__file__)), *[os.pardir, os.pardir, os.pardir, os.pardir])
+    os.path.join(os.path.abspath(os.path.dirname(__file__)), *[os.pardir, os.pardir, os.pardir])
 )
 if not prefix in sys.path:
     sys.path = [prefix] + sys.path
 
 
-import checks.build_systems.uenv.definitions as uenv
-import checks.build_systems.uenv.benchmarks as uenv_mixin
-import checks.sciapp.gromacs.mixin as gromacs
+import checks.build_systems.uenv_checks.definitions as uenv
+import checks.build_systems.uenv_checks.benchmarks as uenv_mixin
+import mixins.sciapp.lammps.mixin as lammps
 import util as hpcutil
 
 
 @rfm.simple_test
-class gromacs_uenv_check(rfm.RunOnlyRegressionTest,
-                        gromacs.gromacs_mixin,
+class lammps_uenv_check(rfm.RunOnlyRegressionTest,
+                        lammps.lammps_mixin,
                         uenv_mixin.uenv_mixin):
     '''
-    Title: GROMACS uenv benchmarks
+    Title: LAMMPS uenv benchmarks
     Description: This check performs a strong experiment up to 16 nodes
-    that checks the uenv-compiled version of GROMACS.
+    that checks the uenv-compiled version of LAMMPS.
 
     Notes:
     * This check triggers two distinct classes of tests, each handling the
@@ -66,11 +66,10 @@ class gromacs_uenv_check(rfm.RunOnlyRegressionTest,
     pass the parameter avoid_local=False to the hpcutil.get_max_cpus_per_part()
     function
     '''
-    uenv = parameter(list(filter(lambda x: x['name'].startswith('gromacs'), uenv.UENV_SOFTWARE)), fmt=lambda x: x['name'])
+    uenv = parameter(list(filter(lambda x: x['name'].startswith('lammps'), uenv.UENV_SOFTWARE)), fmt=lambda x: x['name'])
 
     num_nodes = parameter(reversed([1, 2, 4, 6, 8, 12, 16]))
     partition_cpus = parameter(hpcutil.get_max_cpus_per_part(), fmt=lambda x: f'{util.toalphanum(x["name"]).lower()}_{x["num_cores"]}')
-    loadbalancing = parameter(['yes', 'no'])
     use_multithreading = False
     valid_prog_environs = ['builtin']
     maintainers = ['@victorusu']
@@ -82,23 +81,11 @@ class gromacs_uenv_check(rfm.RunOnlyRegressionTest,
     @run_after('init')
     def setup_job_parameters(self):
         req_feats = ['uenv']
-        if 'cuda' in self.uenv_name:
-            req_feats += ['cuda']
-        elif 'hip' in self.uenv_name:
-            req_feats += ['hip']
-        else:
-            self.skip_if(self.nb_impl == 'gpu',
-                         msg=f'uenv {self.uenv_name} does not support gpu')
-
         pwcreq = [self.partition_cpus['fullname']]
         pwfreq = hpcutil.get_partitions_with_feature_set(set(req_feats))
         partitions = [p for p in pwfreq if p in pwcreq]
 
         self.valid_systems = partitions
-        self.num_cpus_per_task = self.partition_cpus['num_cores']
-        self.num_tasks_per_node = self.partition_cpus['max_num_cores'] // self.num_cpus_per_task
+        self.num_tasks_per_node = self.partition_cpus['num_cores']
+        self.num_cpus_per_task = self.partition_cpus['max_num_cores'] // self.num_tasks_per_node
         self.num_tasks = self.num_nodes * self.num_tasks_per_node
-
-    @run_after('init')
-    def set_loadbalancing(self):
-        self.executable_opts += ['-dlb', f'{self.loadbalancing}', '-npme -1']
