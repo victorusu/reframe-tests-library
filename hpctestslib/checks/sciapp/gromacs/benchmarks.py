@@ -22,12 +22,52 @@ if not prefix in sys.path:
 
 
 import util as hpcutil
-import checks.sciapp.gromacs.mixin as gromacs
+import mixins.sciapp.gromacs.mixin as gromacs
 
 
 @rfm.simple_test
-class gromacs_module_strong_scaling_check(rfm.RunOnlyRegressionTest,
-                                          gromacs.gromacs_mixin):
+class gromacs_strong_scaling_check(rfm.RunOnlyRegressionTest,
+                                   gromacs.gromacs_mixin):
+    '''
+    Title: GROMACS strong scaling benchmarks
+    Description: This is an example strong scaling test up to 16 nodes.
+
+    Notes:
+    * The test assumes that the GROMACS binary is available in the environment.
+
+    * The valid programming environment is the builtin one.
+
+    * Since the mixin supports CPU and GPU-accelerated non-bonded calculations,
+    it assumes that the GROMACS module provide a GPU accelerated version of
+    the code
+
+    * In order to enable the execution of the code in non-remote partitions,
+    pass the parameter avoid_local=False to the hpcutil.get_max_cpus_per_part()
+    function
+    '''
+    maintainers = ['@victorusu']
+    use_multithreading = False
+
+    num_nodes = parameter(reversed([1, 2, 4, 6, 8, 12, 16]))
+    partition_cpus = parameter(hpcutil.get_max_cpus_per_part(), fmt=lambda x: f'{util.toalphanum(x["name"]).lower()}_{x["num_cores"]}')
+    loadbalancing = parameter(['yes', 'no'])
+    use_multithreading = False
+    valid_prog_environs = ['builtin']
+
+    @run_after('init')
+    def setup_job_parameters(self):
+        self.valid_systems = [self.partition_cpus['fullname']]
+        self.num_cpus_per_task = self.partition_cpus['num_cores']
+        self.num_tasks_per_node = self.partition_cpus['max_num_cores'] // self.num_cpus_per_task
+        self.num_tasks = self.num_nodes * self.num_tasks_per_node
+
+    @run_after('init')
+    def set_loadbalancing(self):
+        self.executable_opts += ['-dlb', f'{self.loadbalancing}', '-npme -1']
+
+
+@rfm.simple_test
+class gromacs_modules_strong_scaling_check(gromacs_strong_scaling_check):
     '''
     Title: GROMACS strong scaling benchmarks
     Description: This is an example strong scaling test up to 16 nodes.
@@ -47,26 +87,7 @@ class gromacs_module_strong_scaling_check(rfm.RunOnlyRegressionTest,
     function
     '''
     modules = ['GROMACS']
-    maintainers = ['@victorusu']
-    use_multithreading = False
-
-    num_nodes = parameter(reversed([1, 2, 4, 6, 8, 12, 16]))
-    partition_cpus = parameter(hpcutil.get_max_cpus_per_part(), fmt=lambda x: f'{util.toalphanum(x["name"]).lower()}_{x["num_cores"]}')
-    loadbalancing = parameter(['yes', 'no'])
-    use_multithreading = False
-    valid_prog_environs = ['builtin']
 
     @run_after('init')
     def set_tags(self):
         self.tags |= {'modules'}
-
-    @run_after('init')
-    def setup_job_parameters(self):
-        self.valid_systems = [self.partition_cpus['fullname']]
-        self.num_cpus_per_task = self.partition_cpus['num_cores']
-        self.num_tasks_per_node = self.partition_cpus['max_num_cores'] // self.num_cpus_per_task
-        self.num_tasks = self.num_nodes * self.num_tasks_per_node
-
-    @run_after('init')
-    def set_loadbalancing(self):
-        self.executable_opts += ['-dlb', f'{self.loadbalancing}', '-npme -1']

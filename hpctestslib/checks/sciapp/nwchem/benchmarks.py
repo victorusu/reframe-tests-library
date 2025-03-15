@@ -22,13 +22,12 @@ if not prefix in sys.path:
 
 
 import util as hpcutil
-import checks.sciapp.nwchem.mixin as nwchem
-import checks.build_systems.uenv.benchmarks as uenv
+import mixins.sciapp.nwchem.mixin as nwchem
 
 
 @rfm.simple_test
-class nwchem_module_strong_scaling_check(rfm.RunOnlyRegressionTest,
-                                         nwchem.nwchem_mixin):
+class nwchem_strong_scaling_check(rfm.RunOnlyRegressionTest,
+                                  nwchem.nwchem_mixin):
     '''
     Title: NHChem strong scaling benchmarks
     Description: This is an example strong scaling test up to 16 nodes.
@@ -53,12 +52,31 @@ class nwchem_module_strong_scaling_check(rfm.RunOnlyRegressionTest,
     valid_prog_environs = ['builtin']
 
     @run_after('init')
-    def set_tags(self):
-        self.tags |= {'modules'}
-
-    @run_after('init')
     def setup_job_parameters(self):
         self.valid_systems = [self.partition_cpus['fullname']]
         self.num_cpus_per_task = self.partition_cpus['num_cores']
         self.num_tasks_per_node = self.partition_cpus['max_num_cores'] // self.num_cpus_per_task
         self.num_tasks = self.num_nodes * self.num_tasks_per_node
+
+
+@rfm.simple_test
+class nwchem_modules_strong_scaling_check(nwchem_strong_scaling_check):
+    '''
+    Title: NHChem strong scaling benchmarks
+    Description: This is an example strong scaling test up to 16 nodes.
+
+    Notes:
+    * The test assumes that the NWChem can be loaded by the environment module
+    named NWChem that is available on the system.
+
+    * The valid programming environment is the builtin one.
+
+    * In order to enable the execution of the code in non-remote partitions,
+    pass the parameter avoid_local=False to the hpcutil.get_max_cpus_per_part()
+    function
+    '''
+    modules = ['NHChem']
+
+    @run_after('init')
+    def set_tags(self):
+        self.tags |= {'modules'}
