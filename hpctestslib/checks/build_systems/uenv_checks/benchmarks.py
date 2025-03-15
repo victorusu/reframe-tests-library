@@ -173,6 +173,9 @@ class uenv_image_present_response_aggregator_check(rfm.RunOnlyRegressionTest,
                         self.create_uenv_recipe(parent.uenv, validate_uenv=False)
                     else:
                         part_skipped_uenvs.append(parent.uenv)
+                else:
+                    # TODO: add a gate to restrist non-cuda builds on cuda systems 
+                    self.create_uenv_recipe(parent.uenv, validate_uenv=False)
 
         self.skip_if(len(self.uenvs_installed) + len(part_skipped_uenvs) == len(variants),
                      msg=f'All uenvs are already installed')
