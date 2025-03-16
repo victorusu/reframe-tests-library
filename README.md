@@ -2,9 +2,9 @@
 # **ReFrame Test Library**
 
 ![GitHub license](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)
-![GitHub last commit](https://img.shields.io/github/last-commit/victorusu/reframe-test-library)
-![GitHub issues](https://img.shields.io/github/issues/victorusu/reframe-test-library)
-![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/victorusu/reframe-test-library/ci.yml?branch=main)
+![GitHub last commit](https://img.shields.io/github/last-commit/victorusu/reframe-tests-library)
+![GitHub issues](https://img.shields.io/github/issues/victorusu/reframe-tests-library)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/victorusu/reframe-tests-library/ci.yml?branch=main)
 
 ## **Table of Contents**
 - [Overview](#overview)
@@ -133,7 +133,7 @@ Ensure you have the following installed on your system:
 ### **Clone the Repository**
 ```bash
 git clone https://github.com/victorusu/reframe-tests-library.git
-cd reframe-test-library
+cd reframe-tests-library
 ```
 
 ### **Configuring ReFrame**
