@@ -116,4 +116,8 @@ UENV_SOFTWARE = [
             'cuda@12.4'
         ],
     },
+    {
+        'name' : 'stress-ng@0.12.06',
+        'descr' : 'STRESS-NG',
+    },
 ]

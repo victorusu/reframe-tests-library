@@ -87,7 +87,7 @@ class recipes_creation_mixin(rfm.RegressionMixin):
     def dump_recipe_file(self, sw, template, filename):
         with open(filename, 'w') as f:
             f.write(template.safe_substitute(
-                name=sw['name'],
+                name=sw['name'].replace('@', '_'),
                 bootstrap=sw['bootstrap'],
                 gcc=sw['gcc'],
                 spack=sw['spack'],
@@ -203,3 +203,4 @@ class recipes_creation_mixin(rfm.RegressionMixin):
             suffix = name_opts[-1]
             if 'gcc' not in suffix:
                 software['name'] = software['name'] + software['gcc'].replace('@', '')
+

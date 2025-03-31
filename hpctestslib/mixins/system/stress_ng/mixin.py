@@ -295,7 +295,7 @@ class stress_ng_mixin(rfm.RegressionMixin):
         'zero',
         'zombie',
     ])
-    benchmark_time = 2
+    benchmark_time = 10
 
     @run_after('init')
     def set_executable(self):
