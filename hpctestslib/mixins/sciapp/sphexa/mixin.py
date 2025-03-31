@@ -50,7 +50,7 @@ class sphexa_mixin(rfm.RegressionMixin):
     #: :type: :class:`str`
     #: :values: ``['evrard','turbulence']``
     benchmark = parameter([
-        'evrard', 'sedov',
+        'evrard',
         'turbulence',
     ])
 
@@ -124,7 +124,6 @@ class sphexa_mixin(rfm.RegressionMixin):
         nsteps = sn.extractsingle(r'===\s+Total\s+time\s+for\s+iteration'
                                   r'\((?P<nsteps>\S+)\)\s+',
                                 self.stdout, 'nsteps', int, item=-1)
-
 
         return sn.all([
             sn.assert_reference(total_energy, ref_total_energy,

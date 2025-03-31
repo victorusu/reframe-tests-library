@@ -93,6 +93,6 @@ class nwchem_uenv_check(rfm.RunOnlyRegressionTest,
         partitions = [p for p in pwfreq if p in pwcreq]
 
         self.valid_systems = partitions
-        self.num_cpus_per_task = self.partition_cpus['num_cores']
-        self.num_tasks_per_node = self.partition_cpus['max_num_cores'] // self.num_cpus_per_task
+        self.num_tasks_per_node = self.partition_cpus['num_cores']
+        self.num_cpus_per_task = self.partition_cpus['max_num_cores'] // self.num_tasks_per_node
         self.num_tasks = self.num_nodes * self.num_tasks_per_node

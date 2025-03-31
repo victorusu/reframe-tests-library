@@ -12,7 +12,7 @@ site_configuration = {
         {
             'name' : 'scopi',
             'descr' : 'Piz Scopi vCluster',
-            'hostnames' : ['nid001048'],
+            'hostnames' : ['scopi-ln001'],
             'partitions': [
                 {
                     'name': 'normal',
@@ -25,6 +25,8 @@ site_configuration = {
                     'features': ['remote', 'scontrol', 'uenv'],
                     'max_jobs': 100,
                     'launcher': 'srun',
+                    # 'access': [f'--account={osext.osgroup()}'],
+                    'access' : ['--account=a-csstaff'],
                     'resources': [
                         {
                             'name': 'memory',

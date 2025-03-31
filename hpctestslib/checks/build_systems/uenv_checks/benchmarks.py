@@ -143,6 +143,7 @@ class uenv_image_present_response_aggregator_check(rfm.RunOnlyRegressionTest,
     valid_systems = [hpcutil.get_first_local_partition()]
     local = True
     valid_prog_environs = ['builtin']
+    uenvs_installed = []
 
     @run_after('init')
     def set_parent(self):
@@ -159,7 +160,7 @@ class uenv_image_present_response_aggregator_check(rfm.RunOnlyRegressionTest,
     @sanity_function
     def assert_sanity(self):
         variants = uenv_image_present_check.get_variant_nums()
-        self.uenvs_installed = []
+
         cuda_partitions = list(hpcutil.get_partitions_with_feature_set(set(['cuda'])))
         part_skipped_uenvs = []
         for v in variants:
@@ -174,7 +175,7 @@ class uenv_image_present_response_aggregator_check(rfm.RunOnlyRegressionTest,
                     else:
                         part_skipped_uenvs.append(parent.uenv)
                 else:
-                    # TODO: add a gate to restrist non-cuda builds on cuda systems 
+                    # TODO: add a gate to restrist non-cuda builds on cuda systems
                     self.create_uenv_recipe(parent.uenv, validate_uenv=False)
 
         self.skip_if(len(self.uenvs_installed) + len(part_skipped_uenvs) == len(variants),
@@ -270,6 +271,7 @@ class cluster_configuration_check(rfm.RunOnlyRegressionTest):
     valid_systems = [hpcutil.get_first_local_partition()]
     local = True
     valid_prog_environs = ['builtin']
+    system_dir = ''
 
     @run_after('init')
     def set_parent(self):
@@ -322,7 +324,6 @@ class bootstrap_uenv_check(rfm.RunOnlyRegressionTest,
         self.validate_uenv_software_fields(self.uenv)
         self.skip_if(self.uenv in parent.uenvs_installed,
                      msg=f'uenv {uenv} is already built')
-
         self.uenv_recipe_path = os.path.join(parent.stagedir, self.uenv['name'])
 
     @run_after('init')
@@ -451,7 +452,9 @@ class build_uenv_check(rfm.RunOnlyRegressionTest):
 
 
 @rfm.simple_test
-class update_uenv_check(rfm.RunOnlyRegressionTest, uenv_mixin.build_uenv_mixin):
+class update_uenv_check(rfm.RunOnlyRegressionTest,
+                        uenv_mixin.build_uenv_mixin,
+                        uenv_mixin.recipes_creation_mixin):
     '''
     Check title: Update uenv
     Check description: Adds the recently built uenv to the uenv repo
@@ -475,10 +478,12 @@ class update_uenv_check(rfm.RunOnlyRegressionTest, uenv_mixin.build_uenv_mixin):
     @run_before('run')
     def set_cmds(self):
         now = datetime.datetime.now()
-        self.uenv_data = self.get_uenv_name_from_software(self.uenv, uenv_version=f'{now:%Y%m%d.%H%M%S%z}')
-
         variants = build_uenv_check.get_variant_nums(uenv=self.uenv)
         parent = self.getdep(build_uenv_check.variant_name(variants[0]))
+
+        # update the uenv name to properly get the uenv_data info
+        self.validate_uenv_software_fields(self.uenv)
+        self.uenv_data = self.get_uenv_name_from_software(self.uenv, uenv_version=f'{now:%Y%m%d.%H%M%S%z}')
         self.executable_opts = [
             'image', 'add', self.uenv_data, parent.sqfs_path,
         ]
@@ -515,15 +520,15 @@ class uenv_mixin(uenv_mixin.enable_uenv_mixin, hpcutil.GetDepMixin):
     uenv_spank = parameter([True, False])
 
     @run_after('init')
-    def set_view_name(self):
-        self.view_name = self.name.split('_')[0]
-
-    @run_after('init')
     def set_uenv_name(self):
         if 'name' in self.uenv:
             self.uenv_name = self.uenv['name']
         else:
             raise ValueError(f'name not defined in {self.uenv}')
+
+    @run_after('init')
+    def set_view_name(self):
+        self.view_name = self.uenv['name'].split('@')[0].split('/')[0]
 
     @run_after('init')
     def set_parent(self):
