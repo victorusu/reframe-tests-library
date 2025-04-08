@@ -11,6 +11,7 @@ import sys
 import reframe as rfm
 import reframe.core.runtime as rt
 import reframe.utility.sanity as sn
+import reframe.utility.typecheck as typ
 import reframe.utility.udeps as udeps
 import reframe.utility as util
 
@@ -232,6 +233,7 @@ class uenv_build_cache_check(rfm.RunOnlyRegressionTest):
     valid_systems = [hpcutil.get_first_local_partition()]
     local = True
     valid_prog_environs = ['builtin']
+    use_cache = variable(typ.Bool, value=True)
 
     @run_after('init')
     def set_parent(self):
@@ -247,14 +249,17 @@ class uenv_build_cache_check(rfm.RunOnlyRegressionTest):
     # It should check for the contents of the self.cache_cfg file
     @sanity_function
     def assert_sanity(self):
-        return sn.all([
-            sn.assert_not_found(r'does not exist', self.stdout),
-            sn.assert_not_found(r'does not exist', self.stderr),
-            sn.assert_true(os.path.exists(self.cache_cfg), msg=f'Cache file {self.cache_cfg} does not exist'),
-            sn.assert_not_found(r'spack minimum version is .* - recipe uses .*', self.stdout),
-            sn.assert_eq(os.stat(sn.evaluate(self.stderr)).st_size, 0,
-                         msg=f'file {self.stderr} is not empty'),
-            ])
+        if self.use_cache:
+            return sn.all([
+                sn.assert_not_found(r'does not exist', self.stdout),
+                sn.assert_not_found(r'does not exist', self.stderr),
+                sn.assert_true(os.path.exists(self.cache_cfg), msg=f'Cache file {self.cache_cfg} does not exist'),
+                sn.assert_not_found(r'spack minimum version is .* - recipe uses .*', self.stdout),
+                sn.assert_eq(os.stat(sn.evaluate(self.stderr)).st_size, 0,
+                            msg=f'file {self.stderr} is not empty'),
+                ])
+        else:
+            return True
 
 
 @rfm.simple_test
@@ -266,7 +271,7 @@ class cluster_configuration_check(rfm.RunOnlyRegressionTest):
 
     descr = ('Downloads the configuration for a given Alps node. The configuration is used by stackinator to build uenvs')
     sourcesdir = 'https://github.com/eth-cscs/alps-cluster-config'
-    cluster_name =  variable(str, value='')
+    cluster_name = variable(str, value='')
     executable = hpcutil.ECHOCMD
     valid_systems = [hpcutil.get_first_local_partition()]
     local = True
@@ -307,6 +312,7 @@ class bootstrap_uenv_check(rfm.RunOnlyRegressionTest,
     local = True
     valid_prog_environs = ['builtin']
     use_shm = True
+    use_cache = variable(typ.Bool, value=True)
 
     executable = hpcutil.ECHOCMD
 
@@ -351,7 +357,6 @@ class bootstrap_uenv_check(rfm.RunOnlyRegressionTest,
     def set_cmds(self):
         stackinator = self.getdep('stackinator_bootstrap_check')
         cluster_cfg = self.getdep('cluster_configuration_check')
-        cache_cfg = self.getdep('uenv_build_cache_check')
         self.executable = stackinator.executable
         self.executable_opts = [
             '--build',
@@ -360,9 +365,13 @@ class bootstrap_uenv_check(rfm.RunOnlyRegressionTest,
             self.uenv_recipe_path,
             '--system',
             cluster_cfg.system_dir,
-            '--cache',
-            cache_cfg.cache_cfg
         ]
+        if self.use_cache:
+            cache_cfg = self.getdep('uenv_build_cache_check')
+            self.executable_opts += [
+                '--cache',
+                cache_cfg.cache_cfg
+            ]
 
     @sanity_function
     def assert_sanity(self):
