@@ -311,7 +311,7 @@ class bootstrap_uenv_check(rfm.RunOnlyRegressionTest,
     valid_systems = [hpcutil.get_first_local_partition()]
     local = True
     valid_prog_environs = ['builtin']
-    use_shm = True
+    use_shm = variable(typ.Bool, value=True)
     use_cache = variable(typ.Bool, value=True)
 
     executable = hpcutil.ECHOCMD
