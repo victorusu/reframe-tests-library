@@ -10,9 +10,9 @@ import reframe.utility.osext as osext
 site_configuration = {
     'systems': [
         {
-            'name' : 'rocky',
-            'descr' : 'rocky vm',
-            'hostnames' : ['rocky'],
+            'name' : 'laptop',
+            'descr' : 'laptop vm',
+            'hostnames' : ['laptop'],
             'partitions': [
                 {
                     'name': 'normal',

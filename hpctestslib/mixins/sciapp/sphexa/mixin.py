@@ -83,7 +83,6 @@ class sphexa_mixin(rfm.RegressionMixin):
             msg=(f'cannot setup benchmark {self.benchmark!r}: '
                  f'please define a member function "{bench_fn_name}()"')
         ).evaluate()
-
         bench_fn()
 
     def set_benchmark_evrard(self):
