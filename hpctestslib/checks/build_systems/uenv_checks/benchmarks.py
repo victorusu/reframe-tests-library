@@ -69,7 +69,8 @@ class uenv_cmd_present(rfm.RunOnlyRegressionTest):
 
     @sanity_function
     def assert_sanity(self):
-        return sn.assert_found(r'\d+.\d+.\d+', self.stdout)
+        return sn.all([sn.assert_not_found(r'uenv: command not found', self.stderr),
+            sn.assert_found(r'\d+.\d+.\d+', self.stdout)])
 
 
 @rfm.simple_test
@@ -325,8 +326,12 @@ class uenv_boot(rfm.RunOnlyRegressionTest,
     def set_valid_systems(self):
         partitions = list(hpcutil.get_max_cpus_per_part())
         if partitions:
-            self.valid_systems = [partitions[0]['fullname']]
-            self.num_cpus_per_task = partitions[0]['num_cores']
+            p = next(iter(partitions))
+            if p and 'fullname' in p:
+                self.valid_systems = [p['fullname']]
+
+            if p and 'num_cores' in p:
+                self.num_cpus_per_task = p['num_cores']
 
     @run_after('init')
     def set_parent(self):
@@ -419,8 +424,12 @@ class build_uenv_check(rfm.RunOnlyRegressionTest, hpcutil.GetDepMixin):
     def set_valid_systems(self):
         partitions = list(hpcutil.get_max_cpus_per_part())
         if partitions:
-            self.valid_systems = [partitions[0]['fullname']]
-            self.num_cpus_per_task = partitions[0]['num_cores']
+            p = next(iter(partitions))
+            if p and 'fullname' in p:
+                self.valid_systems = [p['fullname']]
+
+            if p and 'num_cores' in p:
+                self.num_cpus_per_task = p['num_cores']
 
     @run_after('init')
     def set_parent(self):
@@ -497,8 +506,12 @@ class update_uenv_check(rfm.RunOnlyRegressionTest,
     def set_valid_systems(self):
         partitions = list(hpcutil.get_max_cpus_per_part())
         if partitions:
-            self.valid_systems = [partitions[0]['fullname']]
-            self.num_cpus_per_task = partitions[0]['num_cores']
+            p = next(iter(partitions))
+            if p and 'fullname' in p:
+                self.valid_systems = [p['fullname']]
+
+            if p and 'num_cores' in p:
+                self.num_cpus_per_task = p['num_cores']
 
     @run_after('init')
     def set_parent(self):

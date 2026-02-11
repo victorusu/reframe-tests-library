@@ -53,7 +53,9 @@ class stress_ng_uenv_check(rfm.RunOnlyRegressionTest,
 
     @run_after('init')
     def setup_job_parameters(self):
-        self.skip_if_no_procinfo()
+        if not self.partition_cpus:
+            return
+
         self.valid_systems = [self.partition_cpus['fullname']]
         self.num_cpus_per_task = self.partition_cpus['max_num_cores']
         self.num_tasks = 1
