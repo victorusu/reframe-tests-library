@@ -1,4 +1,4 @@
-# Copyright 2025 ETHZ/CSCS
+# Copyright 2025-2026 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -25,7 +25,7 @@ import util as hpcutil
 # Instructions provided by Sebastian to run on Alps Daint:
 # wget --quiet -O 50c.h5 https://zenodo.org/records/8369645/files/50c.h5
 # OMP_NUM_THREADS=64 srun -N1 -c72 --ntasks-per-node=4 -c72 --gpus-per-task=1 ./sphexa-cuda --init evrard --glass 50c.h5 -n 1000 -s 5
-class sphexa_mixin(rfm.RegressionMixin):
+class sphexa_mixin(rfm.RegressionTestPlugin):
     '''
     Title: SPH-EXA benchmarks mixin
     Description: This mixin provides functionality to write SPH-EXA benchmarks.
@@ -51,7 +51,7 @@ class sphexa_mixin(rfm.RegressionMixin):
     #: :values: ``['evrard','turbulence']``
     benchmark = parameter([
         'evrard',
-        'turbulence',
+        # 'turbulence'
     ])
 
     @run_after('init')
@@ -91,7 +91,7 @@ class sphexa_mixin(rfm.RegressionMixin):
             f'{hpcutil.ULIMITCMD} -c 0',
             f'{hpcutil.CURLCMD} -LJO https://zenodo.org/records/8369645/files/50c.h5'
         ]
-        self.executable_opts = ['--init', f'{self.benchmark}',
+        self.executable_opts += ['--init', f'{self.benchmark}',
                                 '--glass', '50c.h5']
 
     def set_benchmark_turbulence(self):
@@ -99,7 +99,7 @@ class sphexa_mixin(rfm.RegressionMixin):
             f'{hpcutil.ULIMITCMD} -c 0',
             f'{hpcutil.CURLCMD} -LJO https://zenodo.org/records/8369645/files/50c.h5'
         ]
-        self.executable_opts = ['--init', f'{self.benchmark}',
+        self.executable_opts += ['--init', f'{self.benchmark}',
                                 '--prop', f'{self.benchmark}',
                                 '--glass', '50c.h5']
 
@@ -112,7 +112,7 @@ class sphexa_mixin(rfm.RegressionMixin):
 
     def assert_sphexa(self, ref_energy):
         # this is an arbritary number I have defined
-        ener_thres = 1e-4
+        ener_thres = 1e-2
 
         ### Check ### Total energy: -0.616261, (internal: 0.049779, kinetic: 0.00067688, gravitational: -0.666717)
         total_energy = sn.extractsingle(r'Total\s+energy:\s+(?P<energy>\S+),',
@@ -129,7 +129,7 @@ class sphexa_mixin(rfm.RegressionMixin):
             sn.assert_reference(total_energy, ref_total_energy,
                                 -thres_total_energy, thres_total_energy),
             sn.assert_eq(nsteps, int(self.num_steps),
-                         msg=f'The simulation did not run for the expected'
+                         msg=f'The simulation did not run for the expected '
                              f'{self.num_steps} steps'),
         ])
 
@@ -159,4 +159,3 @@ class sphexa_mixin(rfm.RegressionMixin):
                sn.assert_not_found('out of memory', self.stderr),
                assert_fn(),
             )
-

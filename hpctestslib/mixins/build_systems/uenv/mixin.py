@@ -1,4 +1,4 @@
-# Copyright 2025 ETHZ/CSCS
+# Copyright 2025-2026 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -23,7 +23,7 @@ if not prefix in sys.path:
 import checks.build_systems.uenv_checks.definitions as uenv
 
 
-class build_uenv_mixin(rfm.RegressionMixin):
+class build_uenv_mixin(rfm.RegressionTestPlugin):
     def uenv2string(self, uenv_dict, uenv_version=None):
         swname = uenv_dict['swname']
         swver = uenv_dict['swver']
@@ -79,7 +79,7 @@ class enable_uenv_mixin(build_uenv_mixin):
             }
 
 
-class recipes_creation_mixin(rfm.RegressionMixin):
+class recipes_creation_mixin(rfm.RegressionTestPlugin):
     def read_recipe_file(self, recipes_file):
         with open(recipes_file, 'r') as f:
             return Template(f.read())
@@ -203,4 +203,3 @@ class recipes_creation_mixin(rfm.RegressionMixin):
             suffix = name_opts[-1]
             if 'gcc' not in suffix:
                 software['name'] = software['name'] + software['gcc'].replace('@', '')
-

@@ -1,4 +1,4 @@
-# Copyright 2025 ETHZ/CSCS
+# Copyright 2025-2026 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -22,7 +22,7 @@ if not prefix in sys.path:
 
 
 import checks.build_systems.uenv_checks.definitions as uenv
-import checks.build_systems.uenv_checks.benchmarks as uenv_mixin
+import checks.build_systems.uenv_checks.benchmarks as uenv_benchmarks
 import mixins.system.stress_ng.mixin as stress_ng
 import util as hpcutil
 
@@ -30,7 +30,7 @@ import util as hpcutil
 @rfm.simple_test
 class stress_ng_uenv_check(rfm.RunOnlyRegressionTest,
                            stress_ng.stress_ng_mixin,
-                            uenv_mixin.uenv_mixin):
+                           uenv_benchmarks.uenv_mixin):
     '''
     Title: STRESS-NG benchmarks
     Description: This is an example STRESS-NG tests

@@ -1,4 +1,4 @@
-# Copyright 2025 ETHZ/CSCS
+# Copyright 2025-2026 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -27,7 +27,7 @@ import util as hpcutil
 GITHUB_INPUT_URL = 'https://api.github.com/repos/victorusu/GROMACS_Benchmark_Suite/tarball/refs/tags/1.0.0' # noqa: E501
 
 
-class gromacs_mixin(rfm.RegressionMixin):
+class gromacs_mixin(rfm.RegressionTestPlugin):
     '''
     Title: GROMACS benchmarks mixin
     Description: This mixin provides functionality to write GROMACS benchmarks.
