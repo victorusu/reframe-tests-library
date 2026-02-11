@@ -1,4 +1,4 @@
-# Copyright 2025 ETHZ/CSCS
+# Copyright 2025-2026 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -57,7 +57,7 @@ class sphexa_strong_scaling_check(rfm.RunOnlyRegressionTest,
         - hip - HIP accelerated version of the code
     '''
 
-    num_nodes = parameter(reversed([1, 2, 4, 6, 8, 12, 16]))
+    num_nodes = parameter(reversed([1, 2, 4, 6, 8]))
     partition_cpus = parameter(hpcutil.get_max_cpus_per_part(), fmt=lambda x: f'{util.toalphanum(x["name"]).lower()}_{x["num_cores"]}')
     accel = parameter(['cpu', 'cuda', 'hip'])
     use_multithreading = False

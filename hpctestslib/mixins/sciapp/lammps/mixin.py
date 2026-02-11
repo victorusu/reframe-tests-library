@@ -1,4 +1,4 @@
-# Copyright 2025 ETHZ/CSCS
+# Copyright 2025-2026 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -24,7 +24,7 @@ if not prefix in sys.path:
 import util as hpcutil
 
 
-class lammps_mixin(rfm.RegressionMixin):
+class lammps_mixin(rfm.RegressionTestPlugin):
     '''
     Title: LAMMPS benchmarks mixin
     Description: This mixin provides functionality to write LAMMPS benchmarks.

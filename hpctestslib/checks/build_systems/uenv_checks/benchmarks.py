@@ -1,4 +1,4 @@
-# Copyright 2025 ETHZ/CSCS
+# Copyright 2025-2026 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -78,10 +78,10 @@ class uenv_image_present_check(rfm.RunOnlyRegressionTest,
                                uenv_mixin.recipes_creation_mixin):
     '''
     Check title: Check if the uenv is already present in the user repo
-    Check description: We should not build images that already present and we should not run tests that depend on non-built images
+    Check description: We should not build images that are already present and we should not run tests that depend on non-built images
     '''
 
-    descr = ('We should not build images that already present and we should not run tests that depend on non-built images')
+    descr = ('We should not build images that are already present and we should not run tests that depend on non-built images')
     uenv = parameter(uenv.UENV_SOFTWARE, fmt=lambda x: x['name'])
     executable = 'uenv'
     valid_systems = [hpcutil.get_first_local_partition()]
@@ -208,7 +208,9 @@ class stackinator_bootstrap_check(rfm.RunOnlyRegressionTest):
 
     @run_before('run')
     def set_prerun_cmds(self):
-        self.prerun_cmds = [os.path.join(sn.evaluate(self.stagedir), 'bootstrap.sh')]
+        self.prerun_cmds = ['git switch releases/v5',
+                            os.path.join(sn.evaluate(self.stagedir), 'bootstrap.sh')]
+        # self.prerun_cmds = [os.path.join(sn.evaluate(self.stagedir), 'bootstrap.sh')]
 
     @run_before('run')
     def update_executable_path(self):
@@ -284,6 +286,10 @@ class cluster_configuration_check(rfm.RunOnlyRegressionTest):
         self.depends_on('uenv_cmd_present')
         self.depends_on('uenv_image_present_response_aggregator_check')
 
+    @run_before('run')
+    def set_prerun_cmds(self):
+        self.prerun_cmds = ['git switch releases/v5']
+
     @sanity_function
     def assert_sanity(self):
         cluster_name = self.cluster_name if self.cluster_name else self.current_system.name
@@ -296,9 +302,10 @@ class cluster_configuration_check(rfm.RunOnlyRegressionTest):
 
 
 @rfm.simple_test
-class bootstrap_uenv_check(rfm.RunOnlyRegressionTest,
-                           uenv_mixin.build_uenv_mixin,
-                           uenv_mixin.recipes_creation_mixin):
+class uenv_boot(rfm.RunOnlyRegressionTest,
+                uenv_mixin.build_uenv_mixin,
+                uenv_mixin.recipes_creation_mixin,
+                hpcutil.GetDepMixin):
     '''
     Check title: Bootstrap UENVs
     Check description: Bootstraps the uenv to be built and generates the command that should be used to build the uenv
@@ -308,24 +315,29 @@ class bootstrap_uenv_check(rfm.RunOnlyRegressionTest,
     sourcesdir = 'https://github.com/eth-cscs/alps-uenv'
     uenv = parameter(uenv.UENV_SOFTWARE, fmt=lambda x: x['name'])
     time_limit = '2h'
-    valid_systems = [hpcutil.get_first_local_partition()]
-    local = True
     valid_prog_environs = ['builtin']
-    use_shm = variable(typ.Bool, value=True)
+    use_shm = variable(typ.Bool, value=False)
     use_cache = variable(typ.Bool, value=True)
 
     executable = hpcutil.ECHOCMD
 
     @run_after('init')
+    def set_valid_systems(self):
+        partitions = list(hpcutil.get_max_cpus_per_part())
+        if partitions:
+            self.valid_systems = [partitions[0]['fullname']]
+            self.num_cpus_per_task = partitions[0]['num_cores']
+
+    @run_after('init')
     def set_parent(self):
-        self.depends_on('uenv_build_cache_check')
-        self.depends_on('stackinator_bootstrap_check')
-        self.depends_on('cluster_configuration_check')
-        self.depends_on('uenv_image_present_response_aggregator_check')
+        self.depends_on('uenv_build_cache_check', how=udeps.by_env)
+        self.depends_on('stackinator_bootstrap_check', how=udeps.by_env)
+        self.depends_on('cluster_configuration_check', how=udeps.by_env)
+        self.depends_on('uenv_image_present_response_aggregator_check', how=udeps.by_env)
 
     @run_before('run')
     def is_uenv_installed(self):
-        parent = self.getdep('uenv_image_present_response_aggregator_check')
+        parent = self.mygetdep('uenv_image_present_response_aggregator_check')
         uenv = self.get_uenv_name_from_software(self.uenv)
         self.validate_uenv_software_fields(self.uenv)
         self.skip_if(self.uenv in parent.uenvs_installed,
@@ -355,8 +367,8 @@ class bootstrap_uenv_check(rfm.RunOnlyRegressionTest,
 
     @run_before('run')
     def set_cmds(self):
-        stackinator = self.getdep('stackinator_bootstrap_check')
-        cluster_cfg = self.getdep('cluster_configuration_check')
+        stackinator = self.mygetdep('stackinator_bootstrap_check')
+        cluster_cfg = self.mygetdep('cluster_configuration_check')
         self.executable = stackinator.executable
         self.executable_opts = [
             '--build',
@@ -367,7 +379,7 @@ class bootstrap_uenv_check(rfm.RunOnlyRegressionTest,
             cluster_cfg.system_dir,
         ]
         if self.use_cache:
-            cache_cfg = self.getdep('uenv_build_cache_check')
+            cache_cfg = self.mygetdep('uenv_build_cache_check')
             self.executable_opts += [
                 '--cache',
                 cache_cfg.cache_cfg
@@ -392,7 +404,7 @@ class bootstrap_uenv_check(rfm.RunOnlyRegressionTest,
 
 
 @rfm.simple_test
-class build_uenv_check(rfm.RunOnlyRegressionTest):
+class build_uenv_check(rfm.RunOnlyRegressionTest, hpcutil.GetDepMixin):
     '''
     Check title: Build uenv check
     Check description: Builds the uenv using the command provided by the uenv bootstrap test
@@ -401,22 +413,27 @@ class build_uenv_check(rfm.RunOnlyRegressionTest):
     descr = ('Builds the uenv using the command provided by the uenv bootstrap test')
     uenv = parameter(uenv.UENV_SOFTWARE, fmt=lambda x: x['name'])
     time_limit = '2h'
-    valid_systems = [hpcutil.get_first_local_partition()]
-    local = True
     valid_prog_environs = ['builtin']
 
     @run_after('init')
+    def set_valid_systems(self):
+        partitions = list(hpcutil.get_max_cpus_per_part())
+        if partitions:
+            self.valid_systems = [partitions[0]['fullname']]
+            self.num_cpus_per_task = partitions[0]['num_cores']
+
+    @run_after('init')
     def set_parent(self):
-        variants = bootstrap_uenv_check.get_variant_nums(uenv=self.uenv)
+        variants = uenv_boot.get_variant_nums(uenv=self.uenv)
         if len(variants) != 1:
             raise DependencyError(f'{self.name} depends on more than one '
-                                  'version of bootstrap_uenv_check')
-        self.depends_on(bootstrap_uenv_check.variant_name(variants[0]))
+                                  'version of uenv_boot')
+        self.depends_on(uenv_boot.variant_name(variants[0]), how=udeps.by_env)
 
     @run_after('setup')
     def set_check_invariants(self):
-        variants = bootstrap_uenv_check.get_variant_nums(uenv=self.uenv)
-        parent = self.getdep(bootstrap_uenv_check.variant_name(variants[0]))
+        variants = uenv_boot.get_variant_nums(uenv=self.uenv)
+        parent = self.mygetdep(uenv_boot.variant_name(variants[0]))
         self.bootstrap_dir = sn.evaluate(parent.stagedir)
         output = os.path.join(self.bootstrap_dir,
                               sn.evaluate(parent.stdout))
@@ -442,8 +459,8 @@ class build_uenv_check(rfm.RunOnlyRegressionTest):
 
     @run_before('cleanup')
     def remove_tmpdir(self):
-        variants = bootstrap_uenv_check.get_variant_nums(uenv=self.uenv)
-        parent = self.getdep(bootstrap_uenv_check.variant_name(variants[0]))
+        variants = uenv_boot.get_variant_nums(uenv=self.uenv)
+        parent = self.mygetdep(uenv_boot.variant_name(variants[0]))
         import shutil
         try:
             shutil.rmtree(parent.tmpdir, ignore_errors=True)
@@ -463,7 +480,8 @@ class build_uenv_check(rfm.RunOnlyRegressionTest):
 @rfm.simple_test
 class update_uenv_check(rfm.RunOnlyRegressionTest,
                         uenv_mixin.build_uenv_mixin,
-                        uenv_mixin.recipes_creation_mixin):
+                        uenv_mixin.recipes_creation_mixin,
+                        hpcutil.GetDepMixin):
     '''
     Check title: Update uenv
     Check description: Adds the recently built uenv to the uenv repo
@@ -471,24 +489,29 @@ class update_uenv_check(rfm.RunOnlyRegressionTest,
 
     descr = ('Adds the recently built uenv to the uenv repo')
     uenv  = parameter(uenv.UENV_SOFTWARE, fmt=lambda x: x['name'])
-    valid_systems = [hpcutil.get_first_local_partition()]
-    local = True
     valid_prog_environs = ['builtin']
     executable = 'uenv'
     time_limit = '2h'
+
+    @run_after('init')
+    def set_valid_systems(self):
+        partitions = list(hpcutil.get_max_cpus_per_part())
+        if partitions:
+            self.valid_systems = [partitions[0]['fullname']]
+            self.num_cpus_per_task = partitions[0]['num_cores']
 
     @run_after('init')
     def set_parent(self):
         variants = build_uenv_check.get_variant_nums(uenv=self.uenv)
         if len(variants) != 1:
             raise DependencyError(f'{self.name} depends on more than one version of build_uenv_check')
-        self.depends_on(build_uenv_check.variant_name(variants[0]))
+        self.depends_on(build_uenv_check.variant_name(variants[0]), how=udeps.by_env)
 
     @run_before('run')
     def set_cmds(self):
         now = datetime.datetime.now()
         variants = build_uenv_check.get_variant_nums(uenv=self.uenv)
-        parent = self.getdep(build_uenv_check.variant_name(variants[0]))
+        parent = self.mygetdep(build_uenv_check.variant_name(variants[0]))
 
         # update the uenv name to properly get the uenv_data info
         self.validate_uenv_software_fields(self.uenv)
@@ -525,8 +548,12 @@ class uenv_mixin(uenv_mixin.enable_uenv_mixin, hpcutil.GetDepMixin):
     uenv = parameter([])
 
     status = parameter(['justbuilt', 'alreadypresent'])
-    uenv_views = parameter([True, False])
-    uenv_spank = parameter([True, False])
+    # status = parameter(['justbuilt'])
+    # status = parameter(['alreadypresent'])
+    # uenv_views = parameter([True, False])
+    uenv_views = True
+    # uenv_spank = parameter([True, False])
+    uenv_spank = True
 
     @run_after('init')
     def set_uenv_name(self):
@@ -586,4 +613,3 @@ class uenv_mixin(uenv_mixin.enable_uenv_mixin, hpcutil.GetDepMixin):
                 self.enable_uenv_options(uenv_path=self.parent.uenv_path, views=self.view_name)
             else:
                 self.enable_uenv_options(uenv_path=self.parent.uenv_path)
-

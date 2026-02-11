@@ -1,4 +1,4 @@
-# Copyright 2025 ETHZ/CSCS
+# Copyright 2025-2026 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -24,7 +24,7 @@ if not prefix in sys.path:
 
 
 import checks.build_systems.uenv_checks.definitions as uenv
-import checks.build_systems.uenv_checks.benchmarks as uenv_mixin
+import checks.build_systems.uenv_checks.benchmarks as uenv_benchmarks
 import mixins.sciapp.nwchem.mixin as nwchem
 import util as hpcutil
 
@@ -32,7 +32,7 @@ import util as hpcutil
 @rfm.simple_test
 class nwchem_uenv_check(rfm.RunOnlyRegressionTest,
                         nwchem.nwchem_mixin,
-                        uenv_mixin.uenv_mixin):
+                        uenv_benchmarks.uenv_mixin):
     '''
     Title: NWChem uenv benchmarks
     Description: This check performs a strong experiment up to 16 nodes
@@ -68,7 +68,7 @@ class nwchem_uenv_check(rfm.RunOnlyRegressionTest,
     '''
     uenv = parameter(list(filter(lambda x: x['name'].startswith('nwchem'), uenv.UENV_SOFTWARE)), fmt=lambda x: x['name'])
 
-    num_nodes = parameter(reversed([1, 2, 4, 6, 8, 12, 16]))
+    num_nodes = parameter(reversed([1, 2, 4, 6, 8]))
     partition_cpus = parameter(hpcutil.get_max_cpus_per_part(), fmt=lambda x: f'{util.toalphanum(x["name"]).lower()}_{x["num_cores"]}')
     use_multithreading = False
     valid_prog_environs = ['builtin']

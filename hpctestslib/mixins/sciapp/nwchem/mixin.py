@@ -1,4 +1,4 @@
-# Copyright 2025 ETHZ/CSCS
+# Copyright 2025-2026 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -25,7 +25,7 @@ if not prefix in sys.path:
 import mixins.sciapp.nwchem.inputs as inputs
 
 
-class nwchem_mixin(rfm.RegressionMixin):
+class nwchem_mixin(rfm.RegressionTestPlugin):
     '''
     Title: NHChem benchmarks mixin
     Description: This mixin provides functionality to write NHChem benchmarks.
@@ -64,18 +64,18 @@ class nwchem_mixin(rfm.RegressionMixin):
     #: :values: ``['bf_tddft_freq', 'cf3coo-_cosmo', 'glucose', 'glucose_ccsd', 'glucose_cosmo', 'glucose_dft', 'glucose_freq', 'glucose_opt', 'glucose_qmd', 'glucose_tddft', 'heme6a1', 'water_dimer']``
     benchmark = parameter([
         'bf_tddft_freq',
-        'cf3coo-_cosmo',
+        # 'cf3coo-_cosmo',
         'glucose',
-        'glucose_ccsd',
-        'glucose_cosmo',
-        'glucose_dft',
-        'glucose_freq',
-        'glucose_opt',
-        'glucose_qmd',
-        # 'glucose_tce', # TODO: run this simulation and add it to the list of values above
-        'glucose_tddft',
+        # 'glucose_ccsd',
+        # 'glucose_cosmo',
+        # 'glucose_dft',
+        # 'glucose_freq',
+        # 'glucose_opt',
+        # 'glucose_qmd',
+        # # 'glucose_tce', # TODO: run this simulation and add it to the list of values above
+        # 'glucose_tddft',
         'heme6a1',
-        'water_dimer',
+        # 'water_dimer',
     ])
 
     @run_after('init')

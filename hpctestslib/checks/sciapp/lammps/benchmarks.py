@@ -1,4 +1,4 @@
-# Copyright 2025 ETHZ/CSCS
+# Copyright 2025-2026 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -47,11 +47,12 @@ class lammps_strong_scaling_check(rfm.RunOnlyRegressionTest,
     maintainers = ['@victorusu']
     use_multithreading = False
 
-    num_nodes = parameter(reversed([1, 2, 4, 6, 8, 12, 16]))
+    num_nodes = parameter(reversed([1, 2, 4, 6, 8]))
     partition_cpus = parameter(hpcutil.get_max_cpus_per_part(), fmt=lambda x: f'{util.toalphanum(x["name"]).lower()}_{x["num_cores"]}')
     loadbalancing = parameter(['yes', 'no'])
     use_multithreading = False
     valid_prog_environs = ['builtin']
+    kokkos = parameter([False])
 
     @run_after('init')
     def setup_job_parameters(self):

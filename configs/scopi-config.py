@@ -13,17 +13,21 @@ site_configuration = {
             'name' : 'scopi',
             'descr' : 'Piz Scopi vCluster',
             'hostnames' : ['scopi-ln001'],
+            'modules_system': 'lmod',
             'partitions': [
                 {
                     'name': 'normal',
                     'descr': 'AMD Zen2',
-                    'scheduler': 'slurm',
+                    'scheduler': 'squeue',
                     'time_limit': '10m',
                     'environs': [
+                        'b',
                         'builtin',
+                        'PrgEnv-cray',
+                        'PrgEnv-gnu'
                     ],
                     'features': ['remote', 'scontrol', 'uenv'],
-                    'max_jobs': 100,
+                    'max_jobs': 500,
                     'launcher': 'srun',
                     # 'access': [f'--account={osext.osgroup()}'],
                     'access' : ['--account=a-csstaff'],
@@ -51,6 +55,7 @@ site_configuration = {
                     'scheduler': 'local',
                     'time_limit': '10m',
                     'environs': [
+                        'b',
                         'builtin',
                     ],
                     'descr': 'Login nodes',
@@ -59,5 +64,12 @@ site_configuration = {
                 },
             ]
         }
+    ],
+    'environments': [
+        {
+            'name': 'b',
+            'target_systems': ['scopi', 's'],
+            'cc': 'cc',
+        },
     ],
 }

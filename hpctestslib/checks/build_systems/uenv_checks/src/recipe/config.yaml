@@ -5,3 +5,4 @@ spack:
   repo: https://github.com/spack/spack.git
   commit: $spack
 modules: false
+version: 1

@@ -1,4 +1,4 @@
-# Copyright 2025 ETHZ/CSCS
+# Copyright 2025-2026 Swiss National Supercomputing Centre (CSCS/ETH Zurich)
 # See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -8,6 +8,7 @@ import reframe as rfm
 
 UENV_DEFAULT_COMPILER = 'gcc@13'
 DEFAULT_SPACK = 'v0.23.1'
+# DEFAULT_SPACK = 'v1.0'
 
 UENV2BUILD = []
 UENV_SOFTWARE = [
@@ -66,7 +67,6 @@ UENV_SOFTWARE = [
             'superlu',
             'zlib-ng',
         ],
-
     },
     {
         'name' : 'gromacs@2024.3',
