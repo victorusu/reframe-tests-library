@@ -69,7 +69,7 @@ class lammps_uenv_check(rfm.RunOnlyRegressionTest,
     uenv = parameter(list(filter(lambda x: x['name'].startswith('lammps'), uenv.UENV_SOFTWARE)), fmt=lambda x: x['name'])
 
     num_nodes = parameter(reversed([1, 2, 4, 6, 8]))
-    partition_cpus = parameter(hpcutil.get_max_cpus_per_part(), fmt=lambda x: f'{util.toalphanum(x["name"]).lower()}_{x["num_cores"]}')
+    partition_cpus = parameter(hpcutil.get_max_cpus_per_part(), fmt=lambda x: f'{util.toalphanum(x["name"]).lower() if x and "name" in x else ""}{"_" + x["num_cores"] if x and "num_cores" in x else ""}')
     use_multithreading = False
     valid_prog_environs = ['builtin']
     maintainers = ['@victorusu']
@@ -80,6 +80,9 @@ class lammps_uenv_check(rfm.RunOnlyRegressionTest,
 
     @run_after('init')
     def setup_job_parameters(self):
+        if not self.partition_cpus:
+            return
+
         req_feats = ['uenv']
         pwcreq = [self.partition_cpus['fullname']]
         pwfreq = hpcutil.get_partitions_with_feature_set(set(req_feats))

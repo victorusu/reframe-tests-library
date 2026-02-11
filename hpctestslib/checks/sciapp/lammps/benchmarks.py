@@ -48,7 +48,7 @@ class lammps_strong_scaling_check(rfm.RunOnlyRegressionTest,
     use_multithreading = False
 
     num_nodes = parameter(reversed([1, 2, 4, 6, 8]))
-    partition_cpus = parameter(hpcutil.get_max_cpus_per_part(), fmt=lambda x: f'{util.toalphanum(x["name"]).lower()}_{x["num_cores"]}')
+    partition_cpus = parameter(hpcutil.get_max_cpus_per_part(), fmt=lambda x: f'{util.toalphanum(x["name"]).lower() if x and "name" in x else ""}{"_" + x["num_cores"] if x and "num_cores" in x else ""}')
     loadbalancing = parameter(['yes', 'no'])
     use_multithreading = False
     valid_prog_environs = ['builtin']
