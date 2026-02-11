@@ -48,7 +48,7 @@ class stress_ng_uenv_check(rfm.RunOnlyRegressionTest,
 
     maintainers = ['@victorusu']
     use_multithreading = False
-    partition_cpus = parameter(hpcutil.get_max_cpus_per_part(), fmt=lambda x: f'{util.toalphanum(x["name"]).lower()}_{x["num_cores"]}')
+    partition_cpus = parameter(hpcutil.get_max_cpus_per_part(), fmt=lambda x: f'{util.toalphanum(x["name"]).lower() if x and "name" in x else ""}{"_" + x["num_cores"] if x and "num_cores" in x else ""}')
     valid_prog_environs = ['builtin']
 
     @run_after('init')

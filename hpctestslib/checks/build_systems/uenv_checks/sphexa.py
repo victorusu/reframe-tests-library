@@ -81,7 +81,7 @@ class sphexa_uenv_check(rfm.RunOnlyRegressionTest,
     uenv = parameter(list(filter(lambda x: x['name'].startswith('sphexa'), uenv.UENV_SOFTWARE)), fmt=lambda x: x['name'])
 
     num_nodes = parameter(reversed([1, 2, 4, 6, 8]))
-    partition_cpus = parameter(hpcutil.get_max_cpus_per_part(), fmt=lambda x: f'{util.toalphanum(x["name"]).lower()}_{x["num_cores"]}')
+    partition_cpus = parameter(hpcutil.get_max_cpus_per_part(), fmt=lambda x: f'{util.toalphanum(x["name"]).lower() if x and "name" in x else ""}{"_" + x["num_cores"] if x and "num_cores" in x else ""}')
     use_multithreading = False
     valid_prog_environs = ['builtin']
     maintainers = ['@victorusu']
